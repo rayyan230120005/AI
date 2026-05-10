@@ -1,0 +1,11 @@
+trigger AccountTrigger on Account (before insert, after insert) {
+    if (Trigger.isBefore && Trigger.isInsert) {
+        AccountTriggerHandler.validateAccount(Trigger.new);
+    }
+    
+    if (Trigger.isAfter && Trigger.isInsert) {
+        AccountTriggerHandler.createDefaultContact(Trigger.new);
+        // Call the new Task/Calendar logic
+        AccountTriggerHandler.assignWork(Trigger.new);
+    }
+}

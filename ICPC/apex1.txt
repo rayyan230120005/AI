@@ -1,0 +1,52 @@
+public class AccountTriggerHandler {
+    
+    public static void validateAccount(List<Account> newAccounts) {
+        for (Account acc : newAccounts) {
+            if (String.isBlank(acc.Phone)) {
+                acc.addError('Wait! Every account in the abc app must have a Phone Number.');
+            }
+        }
+    }
+
+    public static void createDefaultContact(List<Account> newAccounts) {
+        List<Contact> contactsToCreate = new List<Contact>();
+        for (Account acc : newAccounts) {
+            contactsToCreate.add(new Contact(
+                FirstName = 'Primary',
+                LastName = acc.Name + ' Rep',
+                AccountId = acc.Id
+            ));
+        }
+        if (!contactsToCreate.isEmpty()) insert contactsToCreate;
+    }
+
+    // NEW: Analytics/Calendar Logic
+    public static void assignWork(List<Account> newAccounts) {
+        List<Task> followUpTasks = new List<Task>();
+        
+        // Fetch the IDs for your two users
+        User rayyan = [SELECT Id FROM User WHERE Name = 'Rayyan Shaikh' LIMIT 1];
+        User xyz = [SELECT Id FROM User WHERE Name = 'xyz' LIMIT 1];
+
+        for (Account acc : newAccounts) {
+            Task t = new Task();
+            t.Subject = 'Welcome Call for ' + acc.Name;
+            t.WhatId = acc.Id; // Link task to the Account
+            t.Status = 'Not Started';
+            t.Priority = 'High';
+            t.ActivityDate = Date.today().addDays(2); // Set calendar date for 2 days from now
+
+            // Simple "Analytics" logic: Assign based on Industry or Rating
+            if (acc.Rating == 'Hot') {
+                t.OwnerId = rayyan.Id; // Assign to Rayyan
+                t.Description = 'High priority lead for Rayyan.';
+            } else {
+                t.OwnerId = xyz.Id; // Assign to xyz
+                t.Description = 'Standard follow-up for xyz.';
+            }
+            followUpTasks.add(t);
+        }
+        
+        if (!followUpTasks.isEmpty()) insert followUpTasks;
+    }
+}
